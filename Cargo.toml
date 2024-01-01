@@ -1,0 +1,16 @@
+[package]
+name = "wf"
+version = "0.1.0"
+edition = "2021"
+# добавим поле "description"
+description = "Утилита для вывода прогноза погоды"
+
+[dependencies]
+anyhow = "1.0.78"
+chrono = "0.4.31"
+clap = { version = "4.4.12", features = ["derive"] }
+colored = "2.1.0"
+dotenvy = "0.15.7"
+reqwest = { version = "0.11.23", features = ["blocking", "json"] }
+serde = { version = "1.0.193", features = ["derive"] }
+serde_json = "1.0.108"
