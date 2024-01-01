@@ -1,9 +1,14 @@
 <div align="center">
   <h1><code>wf</code> (weather forecast)</h1>
-  <img src="https://img.shields.io/badge/status-going project-3E3E3E?style=float&color=3cbf50"/>
-  <a href="https://stepik.org/a/184782">
-    <img src="https://img.shields.io/badge/Курс-Hands on основы Rust-3E3E3E?style=float&color=e6963c"/>
-  </a>
+  <div>
+    <img src="https://img.shields.io/badge/status-going project-3E3E3E?style=float&color=3cbf50"/>
+    &nbsp;
+    <a href="https://stepik.org/a/184782">
+        <img src="https://img.shields.io/badge/Курс-Hands on основы Rust-3E3E3E?style=float&color=e6963c"/>
+    </a>
+    <br />
+    <br />
+  </div>
 </div>
 
 `wf` - утилита, которая выводит прогноз погоды в терминал, используя [API Яндекс.Погоды](https://yandex.ru/dev/weather/doc/dg/concepts/forecast-info.html).
