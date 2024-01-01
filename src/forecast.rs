@@ -30,7 +30,7 @@ struct ForecastDay {
 }
 
 impl YandexWeatherApi {
-    #[must_use]
+    #[must_use = "Примените методы структуры"]
     pub fn new(api_key: &str, lat: &str, lon: &str) -> anyhow::Result<Self> {
         let s = reqwest::blocking::Client::new()
             .get("https://api.weather.yandex.ru/v2/informers")
