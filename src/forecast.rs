@@ -6,14 +6,14 @@ use colored::{ColoredString, Colorize};
 use serde::Deserialize;
 use serde_json::Value;
 
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 struct FactWeather {
     condition: String,
     temp: i32,
     feels_like: i32,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 pub struct YandexWeatherApi {
     #[serde(rename = "now")]
     now_timestamp: i64,
@@ -21,7 +21,7 @@ pub struct YandexWeatherApi {
     forecast: Value,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 struct ForecastDay {
     temp_min: i32,
     temp_max: i32,

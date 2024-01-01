@@ -1,3 +1,14 @@
+/// Устанавливает соответствие для состояния погоды (поле "condition")
+/// между английским словом и русским переводом
+///
+/// Пример:
+///
+/// ```rust
+/// assert_eq!(
+///     match_condition("partly-cloudy").as_str(),
+///     "малооблачно"
+/// );
+/// ```
 pub fn match_condition(cond: &str) -> String {
     match cond {
         "clear" => "\u{2601}\u{FE0F} ясно".to_string(),
