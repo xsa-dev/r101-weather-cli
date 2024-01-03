@@ -33,6 +33,10 @@ struct ForecastDay {
 impl YandexWeatherApi {
     #[must_use = "Примените методы структуры"]
     pub fn new(api_key: &str, lat: &str, lon: &str) -> anyhow::Result<Self> {
+        // TODO implement
+        // TODO посмотреть нет ли параметра для получения прогноза на несколько дней:
+        // TODO limit - кол-во дней (для тарифа тестовый 7 дней)
+        // https://yandex.ru/dev/weather/doc/dg/concepts/forecast-test.html
         let response = reqwest::blocking::Client::new()
             .get("https://api.weather.yandex.ru/v2/informers")
             .query(&[("lat", lat), ("lon", lon), ("lang", "ru_RU")])
@@ -45,14 +49,11 @@ impl YandexWeatherApi {
             Ok(data)
         } else {
             println!("Ошибка запроса: {}", response.status());
-            // Handle the error accordingly
-            // For example, you might want to return an error here
             Err(anyhow::Error::msg("Request error"))
         }
 
         // Также можно
         // let data: Self = serde_json::from_str(&response.text()?)?;
-
         // println!("{:?}", data);
     }
 
@@ -71,7 +72,7 @@ impl YandexWeatherApi {
         Ok(self)
     }
 
-    pub fn display_forecast(self, periods: usize) -> anyhow::Result<()> {
+    pub fn display_forecast(self) -> anyhow::Result<()> {
         let mut date = DateTime::<Utc>::from_timestamp(self.now_timestamp, 0)
             .unwrap()
             .date_naive();
@@ -114,6 +115,7 @@ pub struct OpenWeatherMapApi {
 
 impl OpenWeatherMapApi {
     // TODO: implement
+    // TODO посмотреть нет ли параметра для получения прогноза на несколько дней
     // https://openweathermap.org/forecast16
     #[must_use = "Примените методы структуры"]
     pub fn new(open_api_key: &str, lat: &str, lon: &str) -> anyhow::Result<Self> {
@@ -124,7 +126,7 @@ impl OpenWeatherMapApi {
         todo!()
     }
 
-    pub fn display_forecast(self, periods: usize) -> anyhow::Result<()> {
+    pub fn display_forecast(self) -> anyhow::Result<()> {
         todo!()
     }
 }

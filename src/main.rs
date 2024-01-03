@@ -49,24 +49,25 @@ fn main() -> anyhow::Result<()> {
     // получим аргументы, переданные нам при запуске утилиты
     let cli = Cli::parse();
 
+    // получим значение периода прогноза
     let periods: usize = cli.forecast.unwrap_or(0);
 
-    if periods > 0 && periods <= 2 {
-        // если флаг `-f` был передан, то выведем еще и прогноз на periods периода вперед (до 2 периодов)
+    // если periods равен 0, то вывести прогноз на сегодня
+    if periods == 0 {
+        YandexWeatherApi::new(&api_key, &lat, &lon)?.display_now()?;
+    } else if (1..=2).contains(&periods) {
+        // если periods от 1 до 2 (включительно), то вывести прогноз на сегодня и на periods периодов вперед
         YandexWeatherApi::new(&api_key, &lat, &lon)?
             .display_now()?
-            .display_forecast(periods)?;
-    } else if periods > 2 && periods <= 16 {
-        // если флаг `-f` был передан, то выведем еще и прогноз на 2-16 периода вперед. (от 2 до 16 периодов)
+            .display_forecast()?;
+    } else if (3..=16).contains(&periods) {
+        // если periods от 3 до 16 (включительно), то вывести прогноз на сегодня и на periods периодов вперед
         OpenWeatherMapApi::new(&open_api_key, &lat, &lon)?
             .display_now()?
-            .display_forecast(periods)?;
+            .display_forecast()?;
     } else {
-        // если флага `-f` нет, то выведем погоду на текущее время
-        YandexWeatherApi::new(&api_key, &lat, &lon)?.display_now()?;
-        if periods > 16 {
-            eprintln!("Для указанного количества периодов прогноза погоды нет");
-        }
+        // если periods не соответствует ни одному из заданных условий, то вывести сообщение о не поддерживаемом периоде
+        eprintln!("Период прогноза {} не поддерживается. Поддерживаются периоды от 0 до 16.", periods);
     }
 
     Ok(())
