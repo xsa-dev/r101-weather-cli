@@ -6,20 +6,21 @@ use colored::{ColoredString, Colorize};
 use serde::Deserialize;
 use serde_json::Value;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 struct FactWeather {
     condition: String,
     temp: i32,
     feels_like: i32,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 pub struct YandexWeatherApi {
     #[serde(rename = "now")]
     now_timestamp: i64,
     fact: FactWeather,
     forecast: Value,
 }
+
 
 #[derive(Deserialize)]
 struct ForecastDay {
@@ -32,18 +33,27 @@ struct ForecastDay {
 impl YandexWeatherApi {
     #[must_use = "Примените методы структуры"]
     pub fn new(api_key: &str, lat: &str, lon: &str) -> anyhow::Result<Self> {
-        let s = reqwest::blocking::Client::new()
+        let response = reqwest::blocking::Client::new()
             .get("https://api.weather.yandex.ru/v2/informers")
             .query(&[("lat", lat), ("lon", lon), ("lang", "ru_RU")])
             .header("X-Yandex-API-Key", api_key)
             .send()?;
 
-        let data: Self = s.json()?; // благодаря фиче "json" (смотри Cargo.toml)
+        if response.status().is_success() {
+            let response_text = response.text()?;
+            let data: Self = serde_json::from_str(&response_text)?;
+            Ok(data)
+        } else {
+            println!("Ошибка запроса: {}", response.status());
+            // Handle the error accordingly
+            // For example, you might want to return an error here
+            Err(anyhow::Error::msg("Request error"))
+        }
 
         // Также можно
-        // let data: Self = serde_json::from_str(&s.text()?)?;
+        // let data: Self = serde_json::from_str(&response.text()?)?;
 
-        Ok(data)
+        // println!("{:?}", data);
     }
 
     pub fn display_now(self) -> anyhow::Result<Self> {
@@ -56,12 +66,12 @@ impl YandexWeatherApi {
             "{}\u{00B0}C (ощущается как {}\u{00B0}C)",
             self.fact.temp, self.fact.feels_like
         );
-        println!("{}", match_condition(&self.fact.condition),);
+        println!("{}", match_condition(&self.fact.condition), );
 
         Ok(self)
     }
 
-    pub fn display_forecast(self) -> anyhow::Result<()> {
+    pub fn display_forecast(self, periods: usize) -> anyhow::Result<()> {
         let mut date = DateTime::<Utc>::from_timestamp(self.now_timestamp, 0)
             .unwrap()
             .date_naive();
@@ -92,6 +102,33 @@ impl YandexWeatherApi {
         Ok(())
     }
 }
+
+
+#[derive(Deserialize, Debug)]
+pub struct OpenWeatherMapApi {
+    #[serde(rename = "now")]
+    now_timestamp: i64,
+    fact: FactWeather,
+    forecast: Value,
+}
+
+impl OpenWeatherMapApi {
+    // TODO: implement
+    // https://openweathermap.org/forecast16
+    #[must_use = "Примените методы структуры"]
+    pub fn new(open_api_key: &str, lat: &str, lon: &str) -> anyhow::Result<Self> {
+        todo!()
+    }
+
+    pub fn display_now(self) -> anyhow::Result<Self> {
+        todo!()
+    }
+
+    pub fn display_forecast(self, periods: usize) -> anyhow::Result<()> {
+        todo!()
+    }
+}
+
 
 fn with_gray(s: &str) -> ColoredString {
     s.truecolor(169, 169, 169)
