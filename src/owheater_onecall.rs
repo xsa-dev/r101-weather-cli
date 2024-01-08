@@ -2,7 +2,7 @@ use chrono::{Datelike, DateTime, NaiveDate, Utc};
 use serde::Deserialize;
 use crate::coloring::with_gray;
 use crate::weather::match_condition;
-use chrono::{NaiveDateTime, TimeZone};
+use chrono::NaiveDateTime;
 
 #[derive(Debug, Deserialize)]
 pub(crate) struct WeatherData {
@@ -11,8 +11,6 @@ pub(crate) struct WeatherData {
     timezone: String,
     timezone_offset: i32,
     current: CurrentWeather,
-    // minutely: Vec<MinutelyData>,
-    // hourly: Vec<HourlyData>,
     daily: Vec<DailyData>,
 }
 
@@ -41,31 +39,6 @@ struct WeatherDescription {
     main: String,
     description: String,
     icon: String,
-}
-
-#[derive(Debug, Deserialize)]
-struct MinutelyData {
-    dt: i64,
-    precipitation: i32,
-}
-
-
-#[derive(Debug, Deserialize)]
-struct HourlyData {
-    dt: i64,
-    temp: f64,
-    feels_like: f64,
-    pressure: i32,
-    humidity: i32,
-    dew_point: f64,
-    uvi: f64,
-    clouds: i32,
-    visibility: i32,
-    wind_speed: f64,
-    wind_deg: i32,
-    wind_gust: f64,
-    weather: Vec<WeatherDescription>,
-    pop: f64,
 }
 
 #[derive(Debug, Deserialize)]
@@ -112,15 +85,15 @@ struct FeelsLike {
 
 impl WeatherData {
     #[must_use = "Примените методы структуры"]
-    pub fn new(open_api_key: &str, lat: &str, lon: &str, _days: &i32) -> anyhow::Result<Self> {
-        let days: String = _days.to_string();
+    pub fn new(open_api_key: &str, lat: &str, lon: &str) -> anyhow::Result<Self> {
 
         let response = reqwest::blocking::Client::new()
             .get("https://api.openweathermap.org/data/2.5/onecall")
             .query(&[
                 ("lat", lat), ("lon", lon),
                 ("appid", open_api_key),
-                ("cnt", &days), ("units", "metric"), ("lang", "ru"),
+                ("units", "metric"),
+                ("lang", "ru"),
                 ("exclude", "minutely,hourly"),
                 ("appid", open_api_key)])
             .send()?;
@@ -151,7 +124,7 @@ impl WeatherData {
     }
 
     pub fn display_forecast(self) -> anyhow::Result<()> {
-        let mut date = DateTime::<Utc>::from_timestamp(self.current.dt, 0)
+        let date = DateTime::<Utc>::from_timestamp(self.current.dt, 0)
             .unwrap()
             .date_naive();
 

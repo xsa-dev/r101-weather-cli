@@ -46,7 +46,6 @@ impl YandexWeatherApi {
         if response.status().is_success() {
             let response_text = response.text()?;
             let data: Self = serde_json::from_str(&response_text)?;
-            println!("{:?}", data);
             Ok(data)
         } else {
             println!("Ошибка запроса: {}", response.status());

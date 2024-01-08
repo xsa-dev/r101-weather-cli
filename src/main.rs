@@ -1,15 +1,18 @@
 use clap::Parser;
 use yandex_weather::YandexWeatherApi;
-use open_weather::WeatherData;
+use owheater_onecall::WeatherData;
+use crate::open_meteo::OpenMeteo;
+
 mod weather;
-mod open_weather;
+mod owheater_onecall;
 mod yandex_weather;
 mod coloring;
+mod open_meteo;
 
 
 #[derive(Debug, Parser)]
 #[command(about, version, long_about = None)]
-struct Cli {
+pub struct Cli {
     #[arg(short, long)]
     forecast: Option<usize>,
 }
@@ -35,7 +38,7 @@ fn main() -> anyhow::Result<()> {
     };
 
     let lat = std::env::var("LAT_COORD").unwrap_or("55.75396".to_string());
-    let lon = std::env::var("LON_COORD").unwrap_or("37.620393".to_string());
+        let lon = std::env::var("LON_COORD").unwrap_or("37.620393".to_string());
 
     let cli = Cli::parse();
 
@@ -47,8 +50,18 @@ fn main() -> anyhow::Result<()> {
         YandexWeatherApi::new(&api_key, &lat, &lon, &periods)?
             .display_now()?
             .display_forecast()?;
-    } else if (3..=16).contains(&periods) {
-        WeatherData::new(&open_api_key, &lat, &lon, &periods)?
+    }
+    else if (3..=7).contains(&periods) {
+        OpenMeteo::new(&lat, &lon, &periods)?
+            .display_now()?
+            .display_forecast()?;
+    }
+    else if 8.eq(&periods) {
+        WeatherData::new(&open_api_key, &lat, &lon)?
+            .display_now()
+            .unwrap().display_forecast()?;
+    } else if (8..=16).contains(&periods) {
+        OpenMeteo::new(&lat, &lon, &periods)?
             .display_now()?
             .display_forecast()?;
     } else {
