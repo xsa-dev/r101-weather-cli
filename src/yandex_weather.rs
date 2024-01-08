@@ -1,51 +1,28 @@
-use std::ops::Deref;
-
-use crate::weather::match_condition;
 use chrono::{DateTime, Duration, Utc};
-use colored::{ColoredString, Colorize};
-use serde::Deserialize;
-use serde_json::Value;
-
-#[derive(Deserialize, Debug)]
-struct FactWeather {
-    condition: String,
-    temp: i32,
-    feels_like: i32,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct YandexWeatherApi {
-    #[serde(rename = "now")]
-    now_timestamp: i64,
-    fact: FactWeather,
-    forecast: Value,
-}
-
-
-#[derive(Deserialize)]
-struct ForecastDay {
-    temp_min: i32,
-    temp_max: i32,
-    part_name: String,
-    condition: String,
-}
+use std::ops::Deref;
+use crate::forecast;
+use crate::forecast::{ForecastDay, YandexWeatherApi};
+use crate::weather::match_condition;
 
 impl YandexWeatherApi {
     #[must_use = "Примените методы структуры"]
-    pub fn new(api_key: &str, lat: &str, lon: &str) -> anyhow::Result<Self> {
-        // TODO implement
-        // TODO посмотреть нет ли параметра для получения прогноза на несколько дней:
-        // TODO limit - кол-во дней (для тарифа тестовый 7 дней)
-        // https://yandex.ru/dev/weather/doc/dg/concepts/forecast-test.html
+    pub fn new(api_key: &str, lat: &str, lon: &str, days: &i32) -> anyhow::Result<Self> {
+        /*
+        TODO implement
+        TODO посмотреть нет ли параметра для получения прогноза на несколько дней:
+        TODO limit - кол-во дней (для тарифа тестовый 7 дней)
+        https://yandex.ru/dev/weather/doc/dg/concepts/forecast-test.html
+        */
         let response = reqwest::blocking::Client::new()
             .get("https://api.weather.yandex.ru/v2/informers")
-            .query(&[("lat", lat), ("lon", lon), ("lang", "ru_RU")])
+            .query(&[("lat", lat), ("lon", lon), ("lang", "ru_RU"), ("limit", stringify!(days))])
             .header("X-Yandex-API-Key", api_key)
             .send()?;
 
         if response.status().is_success() {
             let response_text = response.text()?;
             let data: Self = serde_json::from_str(&response_text)?;
+            println!("{:?}", data);
             Ok(data)
         } else {
             println!("Ошибка запроса: {}", response.status());
@@ -62,7 +39,7 @@ impl YandexWeatherApi {
 
         let header = format!("--- Сейчас ({}) ---", date.format("%a, %d %b %Y"));
 
-        println!("{}", with_gray(&header));
+        println!("{}", forecast::with_gray(&header));
         println!(
             "{}\u{00B0}C (ощущается как {}\u{00B0}C)",
             self.fact.temp, self.fact.feels_like
@@ -95,43 +72,11 @@ impl YandexWeatherApi {
 
             let header = format!("\n--- {} ({}) ---", part_name, date.format("%a, %d %b %Y"));
 
-            println!("{}", with_gray(&header));
+            println!("{}", forecast::with_gray(&header));
             println!("{}..{}\u{00B0}C", f.temp_min, f.temp_max);
             println!("{}", match_condition(&f.condition));
         }
 
         Ok(())
     }
-}
-
-
-#[derive(Deserialize, Debug)]
-pub struct OpenWeatherMapApi {
-    #[serde(rename = "now")]
-    now_timestamp: i64,
-    fact: FactWeather,
-    forecast: Value,
-}
-
-impl OpenWeatherMapApi {
-    // TODO: implement
-    // TODO посмотреть нет ли параметра для получения прогноза на несколько дней
-    // https://openweathermap.org/forecast16
-    #[must_use = "Примените методы структуры"]
-    pub fn new(open_api_key: &str, lat: &str, lon: &str) -> anyhow::Result<Self> {
-        todo!()
-    }
-
-    pub fn display_now(self) -> anyhow::Result<Self> {
-        todo!()
-    }
-
-    pub fn display_forecast(self) -> anyhow::Result<()> {
-        todo!()
-    }
-}
-
-
-fn with_gray(s: &str) -> ColoredString {
-    s.truecolor(169, 169, 169)
 }
