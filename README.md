@@ -70,3 +70,6 @@ $ cargo run -q
 > Как альтернативу можно использовать OpenWeatherMap (смотри `public-apis#weather` [GitHub repo](https://github.com/public-apis/public-apis#weather))
 
 _(опционально)_ Улучшите вывод прогноза погоды, например, добавив другие поля или изменив цвет определенных элементов для улучшения восприятия.
+
+> [!NOTE]
+> Документация на метод OpenWeather: https://openweathermap.org/api/one-call-api
