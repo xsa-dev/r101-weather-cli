@@ -1,17 +1,11 @@
-use std::ops::Deref;
-
-use crate::weather::match_condition;
 use chrono::{DateTime, Duration, Utc};
-use colored::{ColoredString, Colorize};
+use std::ops::{Deref};
 use serde::Deserialize;
 use serde_json::Value;
 
-#[derive(Deserialize, Debug)]
-struct FactWeather {
-    condition: String,
-    temp: i32,
-    feels_like: i32,
-}
+
+use crate::weather::match_condition;
+use crate::coloring::with_gray;
 
 #[derive(Deserialize, Debug)]
 pub struct YandexWeatherApi {
@@ -21,21 +15,31 @@ pub struct YandexWeatherApi {
     forecast: Value,
 }
 
+#[derive(Deserialize, Debug)]
+pub(crate) struct FactWeather {
+    pub(crate) condition: String,
+    pub(crate) temp: i32,
+    pub(crate) feels_like: i32,
+}
+
 
 #[derive(Deserialize)]
-struct ForecastDay {
-    temp_min: i32,
-    temp_max: i32,
-    part_name: String,
-    condition: String,
+pub(crate) struct ForecastDay {
+    pub(crate) temp_min: i32,
+    pub(crate) temp_max: i32,
+    pub(crate) part_name: String,
+    pub(crate) condition: String,
 }
+
 
 impl YandexWeatherApi {
     #[must_use = "Примените методы структуры"]
-    pub fn new(api_key: &str, lat: &str, lon: &str) -> anyhow::Result<Self> {
+    pub fn new(api_key: &str, lat: &str, lon: &str, periods: &i32) -> anyhow::Result<Self> {
+        let days: String = periods.to_string();
+
         let response = reqwest::blocking::Client::new()
             .get("https://api.weather.yandex.ru/v2/informers")
-            .query(&[("lat", lat), ("lon", lon), ("lang", "ru_RU")])
+            .query(&[("lat", lat), ("lon", lon), ("lang", "ru_RU"), ("limit", &days)])
             .header("X-Yandex-API-Key", api_key)
             .send()?;
 
@@ -45,15 +49,9 @@ impl YandexWeatherApi {
             Ok(data)
         } else {
             println!("Ошибка запроса: {}", response.status());
-            // Handle the error accordingly
-            // For example, you might want to return an error here
             Err(anyhow::Error::msg("Request error"))
         }
 
-        // Также можно
-        // let data: Self = serde_json::from_str(&response.text()?)?;
-
-        // println!("{:?}", data);
     }
 
     pub fn display_now(self) -> anyhow::Result<Self> {
@@ -71,7 +69,7 @@ impl YandexWeatherApi {
         Ok(self)
     }
 
-    pub fn display_forecast(self, periods: usize) -> anyhow::Result<()> {
+    pub fn display_forecast(self) -> anyhow::Result<()> {
         let mut date = DateTime::<Utc>::from_timestamp(self.now_timestamp, 0)
             .unwrap()
             .date_naive();
@@ -103,33 +101,3 @@ impl YandexWeatherApi {
     }
 }
 
-
-#[derive(Deserialize, Debug)]
-pub struct OpenWeatherMapApi {
-    #[serde(rename = "now")]
-    now_timestamp: i64,
-    fact: FactWeather,
-    forecast: Value,
-}
-
-impl OpenWeatherMapApi {
-    // TODO: implement
-    // https://openweathermap.org/forecast16
-    #[must_use = "Примените методы структуры"]
-    pub fn new(open_api_key: &str, lat: &str, lon: &str) -> anyhow::Result<Self> {
-        todo!()
-    }
-
-    pub fn display_now(self) -> anyhow::Result<Self> {
-        todo!()
-    }
-
-    pub fn display_forecast(self, periods: usize) -> anyhow::Result<()> {
-        todo!()
-    }
-}
-
-
-fn with_gray(s: &str) -> ColoredString {
-    s.truecolor(169, 169, 169)
-}
